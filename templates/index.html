@@ -1,16 +1,27 @@
-{{ define "index"}} {{template "header"}}
+{{ define "index"}} 
 
-<div class="row" align-items-center>
-    <div class="col-xl-2"></div>
-    <div class="col-xl-8>"></div>
+{{ template "header"}}
 
-    <div class="col-xs-l"></div>
+
+{{ range $key, $value := . }}
+<div class="container">
+<div class="row">
+    <div class="col-2"></div>
+    <div class="col-2">
+    <h1><a href="/edit?id={{$key}}">{{ $value.Title }}</a></h1>
+</div>
+    <div class="col-2"></div>
 </div>
 <div class="row">
-    <div class="col-xl-2"></div>
-    <div class="col-xl-8>"></div>
-
-    <div class="col-xl-2"></div>
+    <div class="col-2"></div>
+    <div class="col-2">
+        {{ $value.Content}}
+    </div>
+    <div class="col-2"></div>
 </div>
+</div>
+{{end}}
 
-{{template "footer"}} {{end}}
+{{template "footer"}} 
+
+{{end}}
