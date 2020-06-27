@@ -1,27 +1,18 @@
-{{ define "index"}} 
-
-{{ template "header"}}
-
-
 {{ range $key, $value := . }}
 <div class="container">
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-2">
+            <h2><a href="/edit/{{$key}}">{{ $value.Title }}</a></h2>
+        </div>
+    <div class="col-2"></div>
+</div>
 <div class="row">
     <div class="col-2"></div>
     <div class="col-2">
-    <h1><a href="/edit?id={{$key}}">{{ $value.Title }}</a></h1>
-</div>
-    <div class="col-2"></div>
-</div>
-<div class="row">
-    <div class="col-2"></div>
-    <div class="col-2">
-        {{ $value.Content}}
+        {{ $value.ContentHtml | unescape}}
     </div>
     <div class="col-2"></div>
 </div>
 </div>
-{{end}}
-
-{{template "footer"}} 
-
-{{end}}
+{{ end }}
