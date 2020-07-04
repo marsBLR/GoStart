@@ -1,24 +1,34 @@
 package main
 
 import (
+	"blog-GO_SR/session"
 	"blog-Go_SR/db/documents"
 	"blog-Go_SR/models"
 	"blog-Go_SR/utils"
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 
-	"gopkg.in/mgo.v2"
-
-	//"strings"
 	_ "github.com/alexbrainman/odbc"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
+	"gopkg.in/mgo.v2"
 )
 
 var postsCollection *mgo.Collection
+var inMemorySession *session.Session
 
-func indexHandler(rnd render.Render) {
+const (
+	COOKIE_NAME = "sessionId"
+)
+
+func indexHandler(rnd render.Render, r *http.Request) {
+	cookie, _ := r.Cookie(COOKIE_NAME)
+	if cookie != nil {
+		fmt.Println(inMemorySession.Get(cookie.Value))
+	}
+
 	postDocuments := []documents.PostDocument{}
 	postsCollection.Find(nil).All(&postDocuments)
 	posts := []models.Post{}
@@ -47,6 +57,26 @@ func writeHandler(rnd render.Render) {
 	rnd.HTML(200, "write", post)
 }
 
+func getLoginHandler(rnd render.Render) {
+
+	rnd.HTML(200, "login", nil)
+}
+func postLoginHandler(rnd render.Render, r *http.Request, w http.ResponseWriter) {
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	fmt.Println(username)
+	fmt.Println(password)
+	sessionId := inMemorySession.Init(username)
+	cookie := &http.Cookie{
+		Name:    COOKIE_NAME,
+		Value:   sessionId,
+		Expires: time.Now().Add(5 * time.Minute),
+	}
+
+	http.SetCookie(w, cookie)
+	rnd.Redirect("/")
+}
 func deleteHandler(rnd render.Render, r *http.Request, params martini.Params) {
 	id := params["id"]
 	if id == "" {
@@ -90,7 +120,7 @@ func unescape(x string) interface{} {
 
 func main() {
 	fmt.Println("Listening on port :3000")
-
+	inMemorySession = session.NewSession()
 	session, err := mgo.Dial("localhost")
 	if err != nil {
 		panic(err)
@@ -112,6 +142,8 @@ func main() {
 	staticOptions := martini.StaticOptions{Prefix: "assets"}
 	m.Use(martini.Static("assets", staticOptions))
 	m.Get("/", indexHandler)
+	m.Get("/login", getLoginHandler)
+	m.Post("/login", postLoginHandler)
 	m.Get("/write", writeHandler)
 	m.Get("/edit/:id", editHandler)
 	m.Get("/delete/:id", deleteHandler)
