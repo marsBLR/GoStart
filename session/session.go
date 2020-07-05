@@ -13,8 +13,9 @@ const (
 )
 
 type Session struct {
-	Id       string
-	Username string
+	Id           string
+	Username     string
+	IsAuthorized bool
 }
 type SessionStore struct {
 	data map[string]*Session
